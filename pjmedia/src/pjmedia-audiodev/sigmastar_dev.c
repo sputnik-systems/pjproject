@@ -26,6 +26,7 @@
 #include <sys/select.h>
 #include <pthread.h>
 #include <errno.h>
+#include "sdk_wrapper.h"
 
 #if PJMEDIA_AUDIO_DEV_HAS_SIGMASTAR_AUDIO
 
@@ -258,77 +259,13 @@ static pj_status_t sigmastar_factory_default_param(pjmedia_aud_dev_factory *f,
     return PJ_SUCCESS;
 }
 
-#include "mi_ao.h"
-#include "mi_ai.h"
-#include "mi_sys.h"
-#include "mi_common_datatype.h"
+
 
 static pj_pool_t* pool;
-// Audio Input
-MI_AUDIO_DEV AiDevId = 0;
-MI_AI_CHN AiChn = 0;
-MI_AUDIO_Frame_t stAiChFrame;
-MI_AUDIO_AecFrame_t stAecFrame;
-MI_SYS_ChnPort_t stAiChnOutputPort;
-// Audio Output
-MI_AUDIO_DEV AoDevId = 0;
-MI_AO_CHN AoChn = 0;
-MI_AUDIO_Frame_t stAoSendFrame;
-#define SAMPLE_RATE E_MI_AUDIO_SAMPLE_RATE_16000
-#define SAMPLE_PER_FRAME (SAMPLE_RATE * 20 / 1000)
-MI_U8 u8Buf[SAMPLE_PER_FRAME * 2];
-MI_SYS_ChnPort_t stChnPort;
-MI_S32 s32Fd;
-fd_set readFdSet;
-struct timeval stTimeOut;
-
-void init_vqe(void) {
-    MI_AI_VqeConfig_t stAiSetVqeConfig, stAiGetVqeConfig;
-    memset(&stAiSetVqeConfig, 0x0, sizeof(MI_AI_VqeConfig_t));
-    stAiSetVqeConfig.u32ChnNum = 1;
-    stAiSetVqeConfig.bAecOpen = FALSE;
-    stAiSetVqeConfig.bAgcOpen = FALSE;
-    stAiSetVqeConfig.bAnrOpen = FALSE;
-    stAiSetVqeConfig.bEqOpen = FALSE;
-    stAiSetVqeConfig.bHpfOpen = FALSE;
-    stAiSetVqeConfig.s32FrameSample = 128;
-    stAiSetVqeConfig.s32WorkSampleRate = SAMPLE_RATE;
-    MI_AI_SetVqeAttr(AiDevId, AiChn, AiDevId, AiChn, &stAiSetVqeConfig);
-    MI_AI_GetVqeAttr(AiDevId, AiChn, &stAiGetVqeConfig);
-    MI_AI_EnableVqe(AiDevId, AiChn);
-}
 
 static pj_status_t initialize_audio_capture(struct sigmastar_audio_stream* stream, const pjmedia_aud_param *param) {
     
-    MI_AUDIO_Attr_t stAttr;
-    stAttr.eBitwidth = E_MI_AUDIO_BIT_WIDTH_16;
-    stAttr.eSamplerate = param->clock_rate;
-    PJ_LOG (4,(THIS_FILE, "capture sr = %d", param->clock_rate));
-    stAttr.eSoundmode = E_MI_AUDIO_SOUND_MODE_MONO;
-    stAttr.eWorkmode = E_MI_AUDIO_MODE_I2S_SLAVE;
-    stAttr.u32PtNumPerFrm = param->samples_per_frame;
-    stAttr.u32ChnCnt = 1;
-
-    if (MI_AI_SetPubAttr(AiDevId, &stAttr) != MI_SUCCESS) return -1;
-    if (MI_AI_Enable(AiDevId) != MI_SUCCESS) return -1;
-    if (MI_AI_EnableChn(AiDevId, AiChn) != MI_SUCCESS) return -1;
-
-    stAiChnOutputPort.eModId = E_MI_MODULE_ID_AI;
-    stAiChnOutputPort.u32DevId = AiDevId;
-    stAiChnOutputPort.u32ChnId = AiChn;
-    stAiChnOutputPort.u32PortId = 0;
-
-    MI_SYS_SetChnOutputPortDepth(&stAiChnOutputPort, 1, 8);
-
-    stChnPort.eModId = E_MI_MODULE_ID_AI;
-    stChnPort.u32DevId = AiDevId;
-    stChnPort.u32ChnId = AiChn;
-    stChnPort.u32PortId = 0;
-    if (MI_SYS_GetFd(&stChnPort, &s32Fd) != MI_SUCCESS) return -1;
-
-    //init_vqe();
-
-    MI_AI_SetVqeVolume(AiDevId, AiChn, 9);
+    sdk_init_audio_capture(param->clock_rate, param->samples_per_frame);
     
     stream->ca_frames = (uint32_t) param->samples_per_frame /
                                             param->channel_count;
@@ -342,29 +279,7 @@ static pj_status_t initialize_audio_capture(struct sigmastar_audio_stream* strea
 
 static pj_status_t initialize_audio_output(struct sigmastar_audio_stream* stream, const pjmedia_aud_param *param) {
     
-    MI_AUDIO_Attr_t stAttr;
-    stAttr.eBitwidth = E_MI_AUDIO_BIT_WIDTH_16;
-    stAttr.eSamplerate = param->clock_rate;
-    PJ_LOG (4,(THIS_FILE, "playback sr = %d", param->clock_rate));
-    stAttr.eSoundmode = E_MI_AUDIO_SOUND_MODE_MONO;
-    stAttr.eWorkmode = E_MI_AUDIO_MODE_I2S_MASTER;
-    stAttr.u32PtNumPerFrm = param->samples_per_frame;
-    stAttr.u32ChnCnt = 1;
-
-    if (MI_AO_SetPubAttr(AoDevId, &stAttr) != MI_SUCCESS) return -1;
-    if (MI_AO_Enable(AoDevId) != MI_SUCCESS) return -1;
-    if (MI_AO_EnableChn(AoDevId, AoChn) != MI_SUCCESS) return -1;
-
-    MI_AO_ChnState_t stStatus;
-    MI_AO_QueryChnStat(AoDevId, AoChn, &stStatus);
-    PJ_LOG (4,(THIS_FILE, "total=%d, free=%d, busy=%d", stStatus.u32ChnTotalNum, stStatus.u32ChnFreeNum, stStatus.u32ChnBusyNum));
-
-    memset(&stAoSendFrame, 0x0, sizeof(MI_AUDIO_Frame_t));  
-    stAoSendFrame.u32Len = SAMPLE_PER_FRAME * 2;
-    stAoSendFrame.apVirAddr[0] = u8Buf;
-    stAoSendFrame.apVirAddr[1] = NULL;
-
-    MI_AO_SetVolume(AoDevId, 0);
+    sdk_init_audio_playback(param->clock_rate, param->samples_per_frame);
     
     stream->pb_frames = (uint32_t) param->samples_per_frame /
                                             param->channel_count;
@@ -398,8 +313,6 @@ static pj_status_t sigmastar_factory_create_stream(pjmedia_aud_dev_factory *f,
     strm->rec_cb = rec_cb;
     strm->play_cb = play_cb;
     strm->user_data = user_data;
-
-    MI_SYS_Init();
 
     /* Create player stream here */
     if (param->dir & PJMEDIA_DIR_PLAYBACK) {
@@ -490,40 +403,12 @@ static pj_status_t sigmastar_stream_set_cap(pjmedia_aud_stream *s,
     return PJMEDIA_EAUD_INVCAP;
 }
 
-static int my_get_frame(void *buffer, uint32_t nsample) {
-    FD_ZERO(&readFdSet);
-    FD_SET(s32Fd, &readFdSet);
-    stTimeOut.tv_sec = 0;
-    stTimeOut.tv_usec = 100 * 1000;
-
-    int res;
-    
-    if ((res = select(s32Fd + 1, &readFdSet, NULL, NULL, &stTimeOut)) > 0) {
-        if (FD_ISSET(s32Fd, &readFdSet)) {
-            if ((res = MI_AI_GetFrame(AiDevId, AiChn, &stAiChFrame, &stAecFrame, 0)) == MI_SUCCESS) {
-                pj_memcpy(buffer, stAiChFrame.apVirAddr[0], nsample * 2);
-                MI_AI_ReleaseFrame(AiDevId, AiChn, &stAiChFrame, &stAecFrame);
-                //PJ_LOG(3, (THIS_FILE, "ts=%u, seq=%u, len=%u", stAiChFrame.u64TimeStamp, stAiChFrame.u32Seq, stAiChFrame.u32Len));
-                return 0;
-            }
-        }
-    }
-    PJ_LOG(3, (THIS_FILE, "Error receiving frame from audio input %x", res));
-    return -1;
+static int my_get_frame(void *buffer, uint32_t nsamples) {
+    sdk_get_audio_frame(buffer, nsamples);
 }
 
 static int my_put_frame(void *buffer, uint32_t nsamples) {
-    int ret;
-
-    pj_memcpy(stAoSendFrame.apVirAddr[0], buffer, nsamples * 2);
-    
-    do{  
-        ret = MI_AO_SendFrame(AoDevId, AoChn, &stAoSendFrame, 0);  
-    }while(ret == MI_AO_ERR_NOBUF); 
-    
-    //PJ_LOG(3, (THIS_FILE, "Hello"));
-
-    return 0;
+    sdk_put_audio_frame(buffer, nsamples);
 }
 
 static int ca_thread_func (void *arg)
@@ -627,13 +512,6 @@ static int ca_thread_func (void *arg)
             if (result < 0) {
                 PJ_LOG (4,(THIS_FILE, "pb_thread_func: error writing data!"));
             }
-        }
-        
-        if(cnt++ == 100) {
-            cnt = 0;
-            MI_AO_ChnState_t stStatus;
-            MI_AO_QueryChnStat(AoDevId, AoChn, &stStatus);
-            PJ_LOG (4,(THIS_FILE, "total=%d, free=%d, busy=%d", stStatus.u32ChnTotalNum, stStatus.u32ChnFreeNum, stStatus.u32ChnBusyNum));
         }
 
         ca_tstamp.u64 += ca_nframes;
@@ -785,14 +663,12 @@ static pj_status_t sigmastar_stream_stop(pjmedia_aud_stream *strm)
 }
 
 static pj_status_t deinitialize_audio_capture() {
-    if (MI_AI_DisableChn(AiDevId, AiChn) != MI_SUCCESS) return -1;
-    if (MI_AI_Disable(AiDevId) != MI_SUCCESS) return -1;
+    sdk_deinit_audio_capture();
     return 0;
 }
 
 static pj_status_t deinitialize_audio_output() {
-    if (MI_AO_DisableChn(AoDevId, AoChn) != MI_SUCCESS) return -1;
-    if (MI_AO_Disable(AoDevId) != MI_SUCCESS) return -1;
+    sdk_deinit_audio_playback();
     return 0;
 }
 
