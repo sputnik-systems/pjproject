@@ -250,7 +250,7 @@ static pj_status_t sigmastar_factory_default_param(pjmedia_aud_dev_factory *f,
     /* The values here are just some examples */
     param->clock_rate = di->info.default_samples_per_sec;
     param->channel_count = 1;
-    param->samples_per_frame = di->info.default_samples_per_sec * 20 / 1000;
+    param->samples_per_frame = di->info.default_samples_per_sec * 100 / 1000;
     param->bits_per_sample = 16;
 
     /* Set the device capabilities here */
@@ -263,9 +263,11 @@ static pj_status_t sigmastar_factory_default_param(pjmedia_aud_dev_factory *f,
 
 static pj_pool_t* pool;
 
+static uint8_t ai_consumer_id;
+
 static pj_status_t initialize_audio_capture(struct sigmastar_audio_stream* stream, const pjmedia_aud_param *param) {
     
-    sdk_init_audio_capture(param->clock_rate, param->samples_per_frame);
+    sdk_register_ai_consumer(&ai_consumer_id);
     
     stream->ca_frames = (uint32_t) param->samples_per_frame /
                                             param->channel_count;
@@ -279,7 +281,7 @@ static pj_status_t initialize_audio_capture(struct sigmastar_audio_stream* strea
 
 static pj_status_t initialize_audio_output(struct sigmastar_audio_stream* stream, const pjmedia_aud_param *param) {
     
-    sdk_init_audio_playback(param->clock_rate, param->samples_per_frame);
+    sdk_init_audio_playback_channel();
     
     stream->pb_frames = (uint32_t) param->samples_per_frame /
                                             param->channel_count;
@@ -404,7 +406,7 @@ static pj_status_t sigmastar_stream_set_cap(pjmedia_aud_stream *s,
 }
 
 static int my_get_frame(void *buffer, uint32_t nsamples) {
-    sdk_get_audio_frame(buffer, nsamples);
+    return sdk_get_ai_frame(buffer, nsamples * 2, ai_consumer_id);
 }
 
 static int my_put_frame(void *buffer, uint32_t nsamples) {
@@ -457,10 +459,14 @@ static int ca_thread_func (void *arg)
     while (!stream->quit) {
         pjmedia_frame frame;
 
-
         // record
         pj_bzero (ca_buf, ca_size);
-        result = my_get_frame (ca_buf, ca_nframes);
+        while(1) {
+            result = my_get_frame (ca_buf, ca_nframes);
+            if(result == 0) usleep(10 * 1000);
+            else break;
+        }
+
         /*
         if (result == 0) {
             PJ_LOG (4,(THIS_FILE, "ca_thread_func: overrun!"));
@@ -663,12 +669,12 @@ static pj_status_t sigmastar_stream_stop(pjmedia_aud_stream *strm)
 }
 
 static pj_status_t deinitialize_audio_capture() {
-    sdk_deinit_audio_capture();
+    sdk_unregister_ai_consumer(ai_consumer_id);
     return 0;
 }
 
 static pj_status_t deinitialize_audio_output() {
-    sdk_deinit_audio_playback();
+    sdk_deinit_audio_playback_channel();
     return 0;
 }
 
