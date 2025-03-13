@@ -10338,7 +10338,7 @@ printf "%s\n" "Checking if libwebrtc is disabled...no" >&6; }
 			;;
 		     *win32* | *w32* | *darwin* | *linux*)
                          case $target in
-                             armv7l*gnueabihf)
+                             arm*gnueabihf)
                                  ac_webrtc_instset=neon
                                  ac_webrtc_cflags="-DWEBRTC_ARCH_ARM_V7 -mfloat-abi=hard -mfpu=neon"
                                  ;;
