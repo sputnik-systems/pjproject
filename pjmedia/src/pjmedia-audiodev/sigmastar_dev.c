@@ -250,7 +250,7 @@ static pj_status_t sigmastar_factory_default_param(pjmedia_aud_dev_factory *f,
     /* The values here are just some examples */
     param->clock_rate = di->info.default_samples_per_sec;
     param->channel_count = 1;
-    param->samples_per_frame = di->info.default_samples_per_sec * 20 / 1000;
+    param->samples_per_frame = di->info.default_samples_per_sec * 40 / 1000;
     param->bits_per_sample = 16;
 
     /* Set the device capabilities here */
