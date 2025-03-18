@@ -172,7 +172,7 @@ static pj_status_t sigmastar_factory_init(pjmedia_aud_dev_factory *f)
     pj_ansi_strxcpy(ndi->info.driver, "sigmastar", sizeof(ndi->info.driver));
     ndi->info.input_count = 1;
     ndi->info.output_count = 1;
-    ndi->info.default_samples_per_sec = 16000;
+    ndi->info.default_samples_per_sec = 8000;
     /* Set the device capabilities here */
     ndi->info.caps = 0;
 
