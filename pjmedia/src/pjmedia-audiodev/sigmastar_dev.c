@@ -26,7 +26,7 @@
 #include <sys/select.h>
 #include <pthread.h>
 #include <errno.h>
-#include "sdk_wrapper.h"
+#include "aio_wrapper.h"
 
 #if PJMEDIA_AUDIO_DEV_HAS_SIGMASTAR_AUDIO
 
@@ -172,7 +172,7 @@ static pj_status_t sigmastar_factory_init(pjmedia_aud_dev_factory *f)
     pj_ansi_strxcpy(ndi->info.driver, "sigmastar", sizeof(ndi->info.driver));
     ndi->info.input_count = 1;
     ndi->info.output_count = 1;
-    ndi->info.default_samples_per_sec = 8000;
+    ndi->info.default_samples_per_sec = SAMPLE_RATE;
     /* Set the device capabilities here */
     ndi->info.caps = 0;
 
@@ -250,7 +250,7 @@ static pj_status_t sigmastar_factory_default_param(pjmedia_aud_dev_factory *f,
     /* The values here are just some examples */
     param->clock_rate = di->info.default_samples_per_sec;
     param->channel_count = 1;
-    param->samples_per_frame = di->info.default_samples_per_sec * 40 / 1000;
+    param->samples_per_frame = SAMPLE_PER_FRAME;
     param->bits_per_sample = 16;
 
     /* Set the device capabilities here */
