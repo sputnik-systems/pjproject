@@ -1380,7 +1380,7 @@
  * Default: 0 (disabled)
  */
 #ifndef PJMEDIA_HAS_VIDEO
-#   define PJMEDIA_HAS_VIDEO                            0
+#   define PJMEDIA_HAS_VIDEO                            1
 #endif
 
 
@@ -1391,7 +1391,7 @@
  * Default: 0
  */
 #ifndef PJMEDIA_HAS_FFMPEG
-#   define PJMEDIA_HAS_FFMPEG                           0
+#   define PJMEDIA_HAS_FFMPEG                           1
 #endif
 
 /**

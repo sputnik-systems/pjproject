@@ -8481,7 +8481,7 @@ printf "%s\n" "#define HAVE_ENUM_AVPIXELFORMAT 1" >>confdefs.h
 
 
 else $as_nop
-  ac_ffmpeg_cflags="$ac_ffmpeg_cflags -DPJMEDIA_USE_OLD_FFMPEG=1"
+  #ac_ffmpeg_cflags="$ac_ffmpeg_cflags -DPJMEDIA_USE_OLD_FFMPEG=1"
 fi
 
 
