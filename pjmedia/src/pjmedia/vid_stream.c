@@ -1938,6 +1938,10 @@ PJ_DEF(pj_status_t) pjmedia_vid_stream_create(
     stream->dec_max_size = vfd_dec->size.w * vfd_dec->size.h * 4;
     stream->dec_frame.buf = pj_pool_alloc(pool, stream->dec_max_size);
 
+    PJ_LOG(4,("hello",
+        "jitter 1=%d, 2=%d, 3=%d, 4=%d",
+        info->jb_init, info->jb_max, info->jb_max_pre, info->jb_min_pre));
+
     /* Init jitter buffer parameters: */
     frm_ptime       = 1000 * vfd_dec->fps.denum / vfd_dec->fps.num;
     chunks_per_frm  = stream->frame_size / PJMEDIA_MAX_MRU;

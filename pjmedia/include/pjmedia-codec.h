@@ -43,6 +43,7 @@
 #include <pjmedia-codec/speex.h>
 #include <pjmedia-codec/vid_toolbox.h>
 #include <pjmedia-codec/vpx.h>
+#include <pjmedia-codec/passthrough_h264.h>
 
 #endif  /* __PJMEDIA_CODEC_PJMEDIA_CODEC_H__ */
 

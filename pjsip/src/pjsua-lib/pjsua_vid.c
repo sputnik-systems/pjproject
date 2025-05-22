@@ -123,6 +123,15 @@ pj_status_t pjsua_vid_subsys_init(void)
     }
 #endif
 
+#if PJMEDIA_HAS_VIDEO && PJMEDIA_HAS_PASSTHROUGH_H264_CODEC
+    status = pjmedia_codec_passthrough_h264_vid_init(NULL, &pjsua_var.cp.factory);
+    if (status != PJ_SUCCESS) {
+        pjsua_perror(THIS_FILE, "Error initializing passtrough h264 codec",
+                     status);
+        goto on_error;
+    }
+#endif
+
 #if !defined(PJSUA_DONT_INIT_VID_DEV_SUBSYS) || \
              PJSUA_DONT_INIT_VID_DEV_SUBSYS==0
     status = pjmedia_vid_dev_subsys_init(&pjsua_var.cp.factory);

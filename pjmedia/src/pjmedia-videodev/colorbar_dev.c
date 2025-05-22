@@ -208,7 +208,7 @@ static pj_status_t cbar_factory_init(pjmedia_vid_dev_factory *f)
     ddi->info.dir = PJMEDIA_DIR_CAPTURE;
     ddi->info.has_callback = PJ_FALSE;
 
-    ddi->info.caps = PJMEDIA_VID_DEV_CAP_FORMAT;
+    ddi->info.caps = PJMEDIA_VID_DEV_CAP_FORMAT | PJMEDIA_VID_DEV_CAP_INPUT_PREVIEW;
     ddi->info.fmt_cnt = PJ_ARRAY_SIZE(cbar_fmts);
     for (i = 0; i < ddi->info.fmt_cnt; i++) {
         pjmedia_format *fmt = &ddi->info.fmt[i];
@@ -227,7 +227,7 @@ static pj_status_t cbar_factory_init(pjmedia_vid_dev_factory *f)
     ddi->info.dir = PJMEDIA_DIR_CAPTURE;
     ddi->info.has_callback = PJ_TRUE;
 
-    ddi->info.caps = PJMEDIA_VID_DEV_CAP_FORMAT;
+    ddi->info.caps = PJMEDIA_VID_DEV_CAP_FORMAT | PJMEDIA_VID_DEV_CAP_INPUT_PREVIEW;
     ddi->info.fmt_cnt = PJ_ARRAY_SIZE(cbar_fmts);
     for (i = 0; i < ddi->info.fmt_cnt; i++) {
         pjmedia_format *fmt = &ddi->info.fmt[i];
@@ -563,6 +563,11 @@ static pj_status_t cbar_stream_set_cap(pjmedia_vid_dev_stream *s,
     {
         return PJ_SUCCESS;
     }
+    if (cap==PJMEDIA_VID_DEV_CAP_INPUT_PREVIEW)
+    {
+        return PJ_SUCCESS;
+    }
+    
 
     return PJMEDIA_EVID_INVCAP;
 }
