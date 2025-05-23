@@ -198,7 +198,7 @@ PJ_BEGIN_DECL
  * Default: 1
  */
 #ifndef PJMEDIA_VIDEO_DEV_HAS_CBAR_SRC
-#   define PJMEDIA_VIDEO_DEV_HAS_CBAR_SRC       1
+#   define PJMEDIA_VIDEO_DEV_HAS_CBAR_SRC       0
 #endif
 
 
@@ -241,6 +241,7 @@ PJ_BEGIN_DECL
 #   define PJMEDIA_VIDEO_DEV_HAS_ANDROID        0
 #endif
 
+#define PJMEDIA_VIDEO_DEV_HAS_SIGMASTAR_H264_SRC       1
 
 /**
  * Specify the SDL library name to be linked with Visual Studio project. 

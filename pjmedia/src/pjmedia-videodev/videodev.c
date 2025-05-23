@@ -66,6 +66,11 @@ pjmedia_vid_dev_factory* pjmedia_opengl_factory(pj_pool_factory *pf);
 pjmedia_vid_dev_factory* pjmedia_and_factory(pj_pool_factory *pf);
 #endif
 
+
+#if PJMEDIA_VIDEO_DEV_HAS_SIGMASTAR_H264_SRC
+pjmedia_vid_dev_factory* pjmedia_sigmastar_h264_factory(pj_pool_factory *pf);
+#endif
+
 #define MAX_DRIVERS     PJMEDIA_VID_DEV_MAX_DRIVERS
 #define MAX_DEVS        PJMEDIA_VID_DEV_MAX_DEVS
 
