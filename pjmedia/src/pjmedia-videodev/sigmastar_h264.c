@@ -21,7 +21,7 @@
 #include <pj/log.h>
 #include <pj/os.h>
 #include <pj/rand.h>
-#include "sdk_wrapper/wrapper.hpp"
+#include "sdk_wrapper/venc_wrapper.h"
 
 
 #if defined(PJMEDIA_HAS_VIDEO) && PJMEDIA_HAS_VIDEO != 0 && \
@@ -641,7 +641,7 @@ static pj_status_t cbar_stream_get_frame(pjmedia_vid_dev_stream *strm,
     stream->ts.u64 += stream->ts_inc;
     return spectrum_run(stream, frame->buf, frame->size);
     #endif
-    Wrapper::VENC::GetDataDirect(Stream::info->vencChn, frame->buf, frame->size);
+    VencGetDataDirect(1, frame->buf, frame->size);
 }
 
 /* API: Start stream. */
