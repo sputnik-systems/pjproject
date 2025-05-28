@@ -20,6 +20,7 @@
 #include <pjmedia/vid_codec_util.h>
 #include <pjmedia/errno.h>
 #include <pj/log.h>
+#include "venc_wrapper.h"
 
 #if defined(PJMEDIA_HAS_PASSTHROUGH_H264_CODEC) && \
 PJMEDIA_HAS_PASSTHROUGH_H264_CODEC != 0 && \
@@ -44,11 +45,11 @@ PJMEDIA_HAS_PASSTHROUGH_H264_CODEC != 0 && \
 #  define DEFAULT_WIDTH         352
 #  define DEFAULT_HEIGHT        288
 #else
-#  define DEFAULT_WIDTH         720
+#  define DEFAULT_WIDTH         640
 #  define DEFAULT_HEIGHT        480
 #endif
 
-#define DEFAULT_FPS             15
+#define DEFAULT_FPS             20
 #define DEFAULT_AVG_BITRATE     256000
 #define DEFAULT_MAX_BITRATE     256000
 
@@ -484,7 +485,7 @@ static pj_status_t oh264_codec_open(pjmedia_vid_codec *codec,
         return PJ_ENOTSUP;
     }
     /* Better always send in single NAL mode for better compatibility */
-    pktz_cfg.mode = PJMEDIA_H264_PACKETIZER_MODE_SINGLE_NAL;
+    pktz_cfg.mode = PJMEDIA_H264_PACKETIZER_MODE_NON_INTERLEAVED;
 #endif
 
     status = pjmedia_h264_packetizer_create(oh264_data->pool, &pktz_cfg,
@@ -705,12 +706,14 @@ static pj_status_t oh264_codec_encode_begin(pjmedia_vid_codec *codec,
     PJ_ASSERT_RETURN(codec && input && out_size && output && has_more,
                      PJ_EINVAL);
 
-    #if 0
+    
 
     oh264_data = (oh264_codec_data*) codec->codec_data;
-
+    #if 0
     PJ_ASSERT_RETURN(input->size == oh264_data->enc_input_size,
                      PJMEDIA_CODEC_EFRMINLEN);
+
+    
 
     if (opt && opt->force_keyframe) {
         oh264_data->enc->ForceIntraFrame(true);
@@ -745,8 +748,10 @@ static pj_status_t oh264_codec_encode_begin(pjmedia_vid_codec *codec,
     #else
     oh264_data->ets = input->timestamp;
     oh264_data->ilayer = 0;
-    oh264_data->enc_frame_size = input->size;
+    //oh264_data->enc_frame_size = input->size;
     oh264_data->enc_frame_whole = (pj_uint8_t*)input->buf;
+    oh264_data->enc_frame_size = VencGetDataDirect(0, input->buf, input->size);
+    if(oh264_data->enc_frame_size == 0) return PJ_SUCCESS;
     oh264_data->enc_processed = 0;
     #endif
     #if 0
@@ -867,11 +872,13 @@ static pj_status_t oh264_codec_encode_more(pjmedia_vid_codec *codec,
     oh264_data->enc_frame_whole = pLayerBsInfo->pBsBuf;
     oh264_data->enc_processed = 0;
     #endif
+
     status = pjmedia_h264_packetize(oh264_data->pktz,
                                     oh264_data->enc_frame_whole,
                                     oh264_data->enc_frame_size,
                                     &oh264_data->enc_processed,
                                     &payload, &payload_len);
+
     if (status != PJ_SUCCESS) {
         /* Reset */
         #if 0
@@ -880,7 +887,7 @@ static pj_status_t oh264_codec_encode_more(pjmedia_vid_codec *codec,
         #endif
         PJ_PERROR(3,(THIS_FILE, status, "pjmedia_h264_packetize() error [2]"));
         return status;
-    }
+    }   
 
     PJ_ASSERT_RETURN(payload_len <= out_size, PJMEDIA_CODEC_EFRMTOOSHORT);
 

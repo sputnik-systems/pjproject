@@ -21,7 +21,7 @@
 #include <pj/log.h>
 #include <pj/os.h>
 #include <pj/rand.h>
-#include "sdk_wrapper/venc_wrapper.h"
+#include "venc_wrapper.h"
 
 
 #if defined(PJMEDIA_HAS_VIDEO) && PJMEDIA_HAS_VIDEO != 0 && \
@@ -31,9 +31,9 @@
 
 #define THIS_FILE               "sigmastar_h264.c"
 #define DEFAULT_CLOCK_RATE      90000
-#define DEFAULT_WIDTH           352 //640
-#define DEFAULT_HEIGHT          288 //480
-#define DEFAULT_FPS             25
+#define DEFAULT_WIDTH           640 //352 //640
+#define DEFAULT_HEIGHT          480 //288 //480
+#define DEFAULT_FPS             20
 
 
 /* cbar_ device info */
@@ -202,7 +202,7 @@ static pj_status_t cbar_factory_init(pjmedia_vid_dev_factory *f)
     /* Passive capturer */
     ddi = &cf->dev_info[0];
     pj_bzero(ddi, sizeof(*ddi));
-    pj_ansi_strxcpy(ddi->info.name, "Sigmastar h264Si",
+    pj_ansi_strxcpy(ddi->info.name, "Sigmastar h264",
                     sizeof(ddi->info.name));
     pj_ansi_strxcpy(ddi->info.driver, "Sigmastar", 
                     sizeof(ddi->info.driver));
@@ -632,16 +632,19 @@ static pj_status_t spectrum_run(struct cbar_stream *d, pj_uint8_t *p,
 static pj_status_t cbar_stream_get_frame(pjmedia_vid_dev_stream *strm,
                                          pjmedia_frame *frame)
 {
-    #if 0
+    
     struct cbar_stream *stream = (struct cbar_stream*)strm;
 
     frame->type = PJMEDIA_FRAME_TYPE_VIDEO;
     frame->bit_info = 0;
     frame->timestamp = stream->ts;
     stream->ts.u64 += stream->ts_inc;
-    return spectrum_run(stream, frame->buf, frame->size);
-    #endif
-    VencGetDataDirect(1, frame->buf, frame->size);
+    //return spectrum_run(stream, frame->buf, frame->size);
+    //int res = VencGetDataDirect(0, frame->buf, frame->size);
+    //PJ_LOG(4, (THIS_FILE, "fz = %d, vs = %d", frame->size, res));
+    //frame->size = res;
+    
+    return PJ_SUCCESS;
 }
 
 /* API: Start stream. */
