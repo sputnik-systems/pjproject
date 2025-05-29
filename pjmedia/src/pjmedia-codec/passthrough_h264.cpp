@@ -628,6 +628,8 @@ static pj_status_t oh264_codec_open(pjmedia_vid_codec *codec,
     /* Need to update param back after values are negotiated */
     pj_memcpy(codec_param, param, sizeof(*codec_param));
 
+    VencOpenStream(SIP_VENC_CHANNEL_NUM);
+
     return PJ_SUCCESS;
 }
 
@@ -750,7 +752,7 @@ static pj_status_t oh264_codec_encode_begin(pjmedia_vid_codec *codec,
     oh264_data->ilayer = 0;
     //oh264_data->enc_frame_size = input->size;
     oh264_data->enc_frame_whole = (pj_uint8_t*)input->buf;
-    oh264_data->enc_frame_size = VencGetDataDirect(0, input->buf, input->size);
+    oh264_data->enc_frame_size = VencGetDataDirect(SIP_VENC_CHANNEL_NUM, input->buf, input->size);
     if(oh264_data->enc_frame_size == 0) return PJ_SUCCESS;
     oh264_data->enc_processed = 0;
     #endif
