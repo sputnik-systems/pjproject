@@ -66,6 +66,11 @@ pjmedia_vid_dev_factory* pjmedia_opengl_factory(pj_pool_factory *pf);
 pjmedia_vid_dev_factory* pjmedia_and_factory(pj_pool_factory *pf);
 #endif
 
+
+#if PJMEDIA_VIDEO_DEV_HAS_SIGMASTAR_H264_SRC
+pjmedia_vid_dev_factory* pjmedia_sigmastar_h264_factory(pj_pool_factory *pf);
+#endif
+
 #define MAX_DRIVERS     PJMEDIA_VID_DEV_MAX_DRIVERS
 #define MAX_DEVS        PJMEDIA_VID_DEV_MAX_DEVS
 
@@ -127,6 +132,12 @@ PJ_DEF(pj_status_t) pjmedia_vid_dev_subsys_init(pj_pool_factory *pf)
      * a real capturer, if any.
      */
     vid_subsys->drv[vid_subsys->drv_cnt++].create = &pjmedia_cbar_factory;
+#endif
+#if PJMEDIA_VIDEO_DEV_HAS_SIGMASTAR_H264_SRC
+    /* Better put colorbar at the last, so the default capturer will be
+     * a real capturer, if any.
+     */
+    vid_subsys->drv[vid_subsys->drv_cnt++].create = &pjmedia_sigmastar_h264_factory;
 #endif
 
     /* Initialize each factory and build the device ID list */

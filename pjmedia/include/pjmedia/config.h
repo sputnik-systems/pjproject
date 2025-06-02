@@ -1391,7 +1391,7 @@
  * Default: 0
  */
 #ifndef PJMEDIA_HAS_FFMPEG
-#   define PJMEDIA_HAS_FFMPEG                           1
+#   define PJMEDIA_HAS_FFMPEG                           0
 #endif
 
 /**

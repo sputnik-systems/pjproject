@@ -7108,7 +7108,7 @@ PJ_DECL(pj_status_t) pjsua_im_typing(pjsua_acc_id acc_id,
  * for pjsua_media_config.max_media_ports.
  */
 #ifndef PJSUA_MAX_CONF_PORTS
-#   define PJSUA_MAX_CONF_PORTS         254
+#   define PJSUA_MAX_CONF_PORTS         4
 #endif
 
 /**

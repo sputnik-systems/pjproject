@@ -107,7 +107,7 @@ export PJMEDIA_AUDIODEV_LDFLAGS += $(PJMEDIA_LDLIB) \
 export PJMEDIA_VIDEODEV_SRCDIR = ../src/pjmedia-videodev
 export PJMEDIA_VIDEODEV_OBJS += videodev.o errno.o avi_dev.o ffmpeg_dev.o \
 				colorbar_dev.o v4l2_dev.o opengl_dev.o \
-				util.o
+				util.o sigmastar_h264.o
 export PJMEDIA_VIDEODEV_CFLAGS += $(_CFLAGS)
 export PJMEDIA_VIDEODEV_CXXFLAGS += $(_CXXFLAGS)
 export PJMEDIA_VIDEODEV_LDFLAGS += $(PJMEDIA_LDLIB) \
@@ -141,7 +141,7 @@ export PJMEDIA_CODEC_OBJS += audio_codecs.o ffmpeg_vid_codecs.o openh264.o \
 			$(OS_OBJS) $(M_OBJS) $(CC_OBJS) $(HOST_OBJS) \
 			ipp_codecs.o silk.o opus.o $(CODEC_OBJS) \
                         g7221_sdp_match.o amr_sdp_match.o passthrough.o \
-                        vpx.o
+                        vpx.o passthrough_h264.o
 export PJMEDIA_CODEC_CFLAGS += $(_CFLAGS) $(GSM_CFLAGS) $(SPEEX_CFLAGS) \
 			$(ILBC_CFLAGS) $(IPP_CFLAGS) $(G7221_CFLAGS)
 export PJMEDIA_CODEC_CXXFLAGS += $(_CXXFLAGS) $(GSM_CFLAGS) $(SPEEX_CFLAGS) \

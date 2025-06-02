@@ -745,6 +745,8 @@
 #   define PJMEDIA_HAS_AND_MEDIA_VP9            1
 #endif
 
+#define PJMEDIA_HAS_PASSTHROUGH_H264_CODEC 1
+
 /**
  * Prioritize to use software video encoder on Android MediaCodec.
  * Set to 0 to prioritize Hardware encoder.
